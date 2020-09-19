@@ -1,0 +1,10 @@
+SIG_STATUS   = 0
+SIG_BUY      = 1
+SIG_CARD     = 2
+SIG_JAILFREE = 3
+SIG_ROLL     = 4
+SIG_LAND     = 5
+SIG_GOTOJAIL = 6
+SIG_PAY      = 7
+SIG_INJAIL   = 8
+SIG_BUILD    = 9
