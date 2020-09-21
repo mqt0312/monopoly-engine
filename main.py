@@ -1,5 +1,4 @@
 from lib.monopoly import Monopoly
-from handlers import handlers
 from os import system
 from config import AUTO
 
@@ -19,13 +18,14 @@ def main():
 
     == MOVE ==
     MOVE consist of a dice roll and a check. The following steps is minimum for a MOVE routine
-     - Monopoly.move(): throw the dice and move the player
+     - Monopoly.turn(): throw the dice and move the player
      - Monopoly.check(): check the slot the player is currently on and perform necessary action
 
      Refer to the documentation for the specifics of these methods
 
     == BUILD ==
-    Monopoly.build() will send SIG_BUILD to your handlers. You must return what you want to build on. Simple enough
+    Monopoly.build() will send SIG_BUILD to your handlers along with a list of eligible properties.
+    The handler must return the exact name of the property that the player wants build on.
 
     == TRADE ==
     TBD
@@ -67,7 +67,13 @@ def main():
             if not playerIn or playerIn == "1":
                 m.turn()
                 m.check()
-                m.status(previous=True)
+                playerData = m.getCurrentPlayerData()
+                print(playerData["name"] + "\'s status:")
+                print("\tBalance:", playerData["balance"])
+                print("\tCurrent Slot:", playerData["slotName"])
+                print("\tIn Jail:", playerData["inJail"])
+                input("Press Enter to continue")
+                m.switchPlayer()
                 break
             elif playerIn == "2":
                 if not m.build():

@@ -51,8 +51,6 @@ def handlers(signo, arg=()):
 
     Below are the handlers for a simple TUI for this game
 
-    TODO: Implement SIG_MSG in place for SIG_PAY, SIG_CARD, SIG_JAILFREE, SIG_ROLL, SIG_LAND. Reason: Remove redundancy
-
     :param signo: The signal number. Defined as macros in game_signals
     :param arg: Argument to be passed to handlers.
     :return:
@@ -79,9 +77,9 @@ def handlers(signo, arg=()):
         print(payer, "paid", amount, "to", (payee if payee else "the Bank"))
         confirm()
 
-    def sigCard(card):
+    def sigCard(cardDesc):
         print("The card you have drawn says:\n\n\t", end="")
-        print(card.getDesc() + "\n")
+        print(cardDesc + "\n")
 
     def sigJailFree():
         print("Congrats! You just got a Get Out of Jail Free Card!!")
@@ -107,6 +105,8 @@ def handlers(signo, arg=()):
         choice = {i: slot for i, slot in enumerate(buyable)}
         for i, name in choice.items():
             print(i+1, "-", name)
+        if AUTO:
+            return choice[0]
         while 1:
             playerIn = input("> ")
             try:
@@ -120,6 +120,8 @@ def handlers(signo, arg=()):
         print("What would you like to do?")
         print("(1) Try rolling a double")
         print("(2) Pay", BAIL, "dollars to get out")
+        if AUTO:
+            return 0
         while 1:
             playerIn = input("> ")
             if playerIn == "1":
@@ -128,6 +130,15 @@ def handlers(signo, arg=()):
                 return 1
             else:
                 print("Invalid answer")
+
+    def sigOutOfJail():
+        print("You are now out of jail")
+
+    def sigNoBuyable():
+        print("You cannot build yet! You need to own at least 1 full block of properties")
+
+    def sigNoJTL():
+        print("You don't have any jail throw left. You must now pay the bail.")
 
     def default():
         print("default handler for", sig_name[signo])
@@ -143,7 +154,10 @@ def handlers(signo, arg=()):
         SIG_GOTOJAIL: sigGoToJail,
         SIG_PAY: sigPay,
         SIG_INJAIL: sigInJail,
-        SIG_BUILD: sigBuild
+        SIG_BUILD: sigBuild,
+        SIG_OUTOFJAIL: sigOutOfJail,
+        SIG_NOJTL: sigNoJTL,
+        SIG_NOBUYABLE: sigNoBuyable
     }
     if signo in handlers:
         return handlers[signo](*arg)

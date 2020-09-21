@@ -2,8 +2,6 @@ from uuid import uuid1
 
 from common.flags import *
 from config import *
-from common.default_handlers import *
-
 
 class Player:
     def __init__(self, name, board, game):
@@ -113,9 +111,6 @@ class Player:
 
     def getGame(self):
         return self.game
-
-    def setHandlers(self, handlers):
-        self.handlers = handlers
 
     def getBuildingCount(self):
         house = 0

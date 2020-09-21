@@ -14,7 +14,7 @@ class Board:
         self.lookup = {"GO":self.slots}
 
         self.chance_deck = CardDeck(0)
-        self.community_deck = CardDeck(0)
+        self.community_deck = CardDeck(1)
         # #Add normal property
         for group in PROPERTY:
             self.genProp(group, PropertySlot)

@@ -1,7 +1,5 @@
 from random import shuffle
-from data.cards import CHANCE_CARD
-from common.game_signals import *
-from lib.utils import signal
+from data.cards import CHANCE_CARD, COMMUNITY_CHEST_CARD
 
 class Card:
     def __init__(self, desc, actionTuple):
@@ -40,6 +38,9 @@ class CardDeck():
         self.used = []
         if type == 0:
             for card in CHANCE_CARD:
+                self.cards.append(Card(*card))
+        elif type == 1:
+            for card in COMMUNITY_CHEST_CARD:
                 self.cards.append(Card(*card))
         self.cards.append(JailFreeCard(self))
         shuffle(self.cards)
