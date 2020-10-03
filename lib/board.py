@@ -8,7 +8,7 @@ from data.slots import *
 BOARD_SIZE = 40
 
 class Board:
-    def __init__(self, game):
+    def __init__(self):
         self.slots = [None for _ in range(BOARD_SIZE)]
         self.slots[0] = BoardSlot("GO")
         self.lookup = {"GO":self.slots}
@@ -99,6 +99,15 @@ class Board:
 
     def build(self, propName):
         self[propName].incrStage()
+
+    def getData(self):
+        ret = {
+            "slots": {}
+        }
+        for slot in self.getSlots():
+            ret["slots"][slot.getName()] = slot.getData()
+        return ret
+
 
 
 

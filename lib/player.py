@@ -90,11 +90,9 @@ class Player:
             "jailfree": len(self.jailFreeCard),
             "inJail": self.inJail,
             "slotName": self.curSlot.getName(),
-            "ownedLookup": {}
+            "ownedLookup": [s.getName() for s in self.getOwnedList()]
         }
-        for s in self.getOwnedList():
-            data = s.getData()
-            ret["ownedLookup"][data["name"]] = s.getData()
+
         return ret
 
     def adjustBalance(self, amount):

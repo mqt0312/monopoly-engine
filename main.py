@@ -1,6 +1,7 @@
 from lib.monopoly import Monopoly
 from os import system
 from config import AUTO
+from pprint import pprint
 
 
 def clrscr():
@@ -83,6 +84,7 @@ def main():
                 return
             else:
                 print("Invalid option")
+        pprint(m.getData())
 
 
 

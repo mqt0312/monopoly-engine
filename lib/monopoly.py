@@ -10,6 +10,7 @@ from config import SALARY, AUTH, BAIL
 
 BANK = None
 
+
 class Monopoly:
     """
     The Monopoly game engine
@@ -28,25 +29,25 @@ class Monopoly:
 
     2) The engine is not explicit with its states
 
-    This means that the engine will never communicate its states to the implementation unprompted. The implementation
-    must either keep track of the engine's states with its own methods, or simply infer the states as the game is
-    played. To make life easier, querying methods are available to provide the implementation with appropriate data to
-    determine the current states of the engine. The signaling system is also used to communicate with the
-    implementation about certain in-game events.
+    This is to say that the engine will not be hand-holding the implementation. The implementation must know which
+    point of the game the engine is at, and whether or not the engine requires appropriate input to continue. This is
+    to decouple the engine's execution from that of the implementation. The signaling system is also used to
+    communicate with the implementation about certain in-game events. The querying methods are also provided to give
+    the implementation ways to acquire relevant data to determine the next step.
 
     TL;DR: if the implementation knows what it is doing, the engine will be happy.
 
     For those who prefers bullet points like me:
 
     What this engine will do:
-     - Perform appropriate action determined by an implementation
+     - Perform appropriate action path determined by an implementation
      - Send signals when appropriates
      - Preventing illegal move, up to some extends.
      - Allow the implementation to see its states
     What this engine will NOT do:
      - Interact with player; the engine interact with and ONLY with the implementation
      - Communicate with the implementation unless it communicate with the engine first.
-     
+
     ## Methods Summary ##
 
     # Gameplay #
@@ -64,13 +65,14 @@ class Monopoly:
     TODO: Implement trade
 
     """
+
     def __init__(self, pnames):
         """
         :param pnames: An Array. Name of the players as Strings
         """
-        self.__board = Board(self)
+        self.__board = Board()
         self.__players = tuple([Player(pn, self.__board, self) for pn in pnames])
-        self.__plookup = {p.getId():p for p in self.__players}
+        self.__plookup = {p.getId(): p for p in self.__players}
         self.__lastRoll = None
         self.__p = None
         self.__getFirstPlayer()
@@ -223,7 +225,7 @@ class Monopoly:
                     self.__move(board[param])
             elif CHECK & intent:
                 if ROLL & intent:
-                    self.__roll() # TODO: Optimize. This is redundant if util is owned by current player.
+                    self.__roll()  # TODO: Optimize. This is redundant if util is owned by current player.
                 self.check(param)
             elif PAY & intent:
                 if OTHERS & intent:
@@ -242,7 +244,7 @@ class Monopoly:
 
     # Gameplay method
 
-    def turn(self, key=None): # TODO: Implement authorization
+    def turn(self, key=None):  # TODO: Implement authorization
         """
         Turn method
 
@@ -250,13 +252,13 @@ class Monopoly:
         If the current player is in Jail, query for player's choice of either throw dice or pay bail.
 
         :param key: Not Implemented
-        :return: An Integer. Return code. 1 if successful, 0 if otherwise
+        :return: An Integer. Return code. 0 if nothing illegal happened, 1 if otherwise
         """
         if not self.__isState(STATE_BEGIN):
-            return 0
+            return 1
         player = self.__getCurPlayer()
         if player.isInJail():
-            if signal(SIG_INJAIL, (player.getJTL(), )):
+            if signal(SIG_INJAIL, (player.getJTL(),)):
                 pay(player, BAIL, BANK)
                 player.setInJail(False)
                 signal(SIG_OUTOFJAIL)
@@ -270,7 +272,7 @@ class Monopoly:
                 else:
                     player.decrJTL()
                     if player.getJTL():
-                        return 1
+                        return 0
                     else:
                         pay(player, BAIL, BANK)
                         player.setInJail(False)
@@ -279,7 +281,7 @@ class Monopoly:
             res, dice = self.__roll()
         self.__move(res)
         self.__setState(STATE_CHECK)
-        return 1
+        return 0
 
     def check(self, mult=1):
         """
@@ -310,7 +312,7 @@ class Monopoly:
                 else:
                     rent = slot.getRent()
                 if owner != player:
-                    pay(player, rent*mult, owner)
+                    pay(player, rent * mult, owner)
             else:
                 if player.getBalance() >= slot.getPrice():
                     if signal(SIG_BUY, (slot.getData(),)):
@@ -369,7 +371,7 @@ class Monopoly:
         for prop in ownedList:
             if not prop.isType(SLOT_PROP_UTIL | SLOT_PROP_RAIL) and prop.isSibOwned() and prop.isLeastDeveloped():
                 buyableList.append(prop.getName())
-        propName = signal(SIG_BUILD, (buyableList, ))
+        propName = signal(SIG_BUILD, (buyableList,))
         if not propName:
             signal(SIG_NOBUYABLE)
             return 1
@@ -384,7 +386,14 @@ class Monopoly:
         if owner == player and slot.isSibOwned() and slot.isLeastDeveloped():
             board.build(propName)
             return 0
-        return 1 # Should NEVER have to hit this line if handler is correctly implemented.
+        return 1  # Should NEVER have to hit this line if handler is correctly implemented.
+
+    def auction(self):
+        if self.__isState(STATE_AUC):
+            pcount = self.getPlayerCount()
+            for p in range(1, pcount):
+                if signal(SIG_AUC):
+                    purchase(self.__players[(self.__p + p) % pcount])
 
     # Query method
 
@@ -422,7 +431,7 @@ class Monopoly:
         """
         Get data of the current player method
 
-        Return the data of the current player
+        Return a snapshot of the current player's data
 
         :return: A dict object. The data of the current player
         """
@@ -434,7 +443,7 @@ class Monopoly:
         """
         Get data of all players method
 
-        Return the data of all players
+        Return snapshots of all players' data
 
         :param by_uuid: A Boolean value. If True, the key of the return dict object will be the player's UUID
         :return: A dict object. The data of all player. Key will be the names of players by default
@@ -446,4 +455,16 @@ class Monopoly:
                 ret[next_p["id"]] = next_p
             else:
                 ret[next_p["name"]] = next_p
+        return ret
+
+    def getData(self):
+        """
+        Return a snapshot of the game's data
+
+        :return: A dict object. The data of the board
+        """
+        ret = self.__getBoard().getData()
+        ret["players"] = {}
+        for p in self.__players:
+            ret["players"][p.getName()] = p.getData()
         return ret

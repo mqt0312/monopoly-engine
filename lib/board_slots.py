@@ -27,7 +27,8 @@ class BoardSlot:
         ret = {
             "name": self.getName(),
             "type": self.getType(),
-            "index": self.getIndex()
+            "index": self.getIndex(),
+            "players": [p.getName() for p in self.players]
         }
         return ret
 
@@ -87,6 +88,11 @@ class PropertySlot(BoardSlot):
     def getData(self):
         ret = super().getData()
         ret["price"] = self.getPrice()
+        if self.isOwned():
+            ret["owner"] = self.getOwner().getName()
+        else:
+            ret["owner"] = None
+        ret["siblings"] = [s.getName() for s in self.getSibs()]
         if self.isType(SLOT_PROP_UTIL):
             ret["multiplier"] = self.getMultiplier()
         else:
@@ -224,7 +230,7 @@ class UtilitySlot(PropertySlot):
         return # disable this method since you don't "build" on utility slots
 
     def getMultiplier(self):
-        return 10 if self.isSibOwned() else 4
+        return (10 if self.isSibOwned() else 4) if self.isOwned() else 0
 
     def getRent(self, *args):
         multiplier = 10 if self.isSibOwned() else 4

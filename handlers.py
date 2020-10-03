@@ -140,6 +140,9 @@ def handlers(signo, arg=()):
     def sigNoJTL():
         print("You don't have any jail throw left. You must now pay the bail.")
 
+    def sigAuc(pname):
+        print(pname + ", what price would you buy this at:")
+
     def default():
         print("default handler for", sig_name[signo])
         return 1
@@ -157,7 +160,8 @@ def handlers(signo, arg=()):
         SIG_BUILD: sigBuild,
         SIG_OUTOFJAIL: sigOutOfJail,
         SIG_NOJTL: sigNoJTL,
-        SIG_NOBUYABLE: sigNoBuyable
+        SIG_NOBUYABLE: sigNoBuyable,
+        SIG_AUC : default
     }
     if signo in handlers:
         return handlers[signo](*arg)
