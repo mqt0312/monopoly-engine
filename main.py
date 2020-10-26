@@ -1,4 +1,4 @@
-from lib.monopoly import Monopoly
+import lib.monopoly as monopoly
 from os import system
 from config import AUTO
 from pprint import pprint
@@ -32,59 +32,16 @@ def main():
     TBD
 
     """
-    clrscr()
-    if AUTO:
-        m = Monopoly(["Foo", "Bar"])
-    else:
-        players = []
-        print("Enter the players' name. Press Enter on empty to start the game")
-        while 1:
-            playerIn = input("Name: ")
-            if not playerIn:
-                if len(players) > 1:
-                    break
-                else:
-                    print("At least 2 players are required")
-            else:
-                players.append(playerIn)
-                print("Player", playerIn, "added")
-        m = Monopoly(players)
-        clrscr()
-        print("Welcome to Monopoly v0.1")
-        print("by Minh Truong")
-        print()
-        print("Press Enter to Start")
-        input()
+    shell = monopoly.init(["Foo", "Bar"])
     while 1:
-        clrscr()
-        curPlayerName = m.whoNext()
-        print(curPlayerName, "is next")
-        print("What would you like to do? (Pressing Enter will select 1)")
-        print("(1) Play my turn")
-        print("(2) Build on my properties")
-        print("(q) Forfeit the game")
-        while 1:
-            playerIn = input("> ")
-            if not playerIn or playerIn == "1":
-                m.turn()
-                m.check()
-                playerData = m.getCurrentPlayerData()
-                print(playerData["name"] + "\'s status:")
-                print("\tBalance:", playerData["balance"])
-                print("\tCurrent Slot:", playerData["slotName"])
-                print("\tIn Jail:", playerData["inJail"])
-                input("Press Enter to continue")
-                m.switchPlayer()
-                break
-            elif playerIn == "2":
-                if not m.build():
-                    print("Success!")
-                break
-            elif playerIn == "q":
-                return
-            else:
-                print("Invalid option")
-        pprint(m.getData())
+        shell("INPUT", "abcd")
+        shell("INPUT", "efgh")
+        print(shell("SITREP"))
+        shell("QUIT")
+        break
+
+
+
 
 
 
